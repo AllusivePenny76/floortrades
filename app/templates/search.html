@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<section class="hero"><h1>Search</h1></section>
+{% if results is none %}
+  <div class="empty">Type a politician name or ticker symbol above.</div>
+{% else %}
+  {% if results.people %}
+  <h2 class="section-h">Politicians</h2>
+  <div class="cards">
+    {% for p in results.people %}
+    <a class="card" href="/politician/{{ p.id }}">
+      {% if p.photo_url %}<img class="avatar" src="{{ p.photo_url }}" alt="" loading="lazy">
+      {% else %}<span class="avatar ph">{{ p.full_name[:1] }}</span>{% endif %}
+      <span class="who-text">
+        <span class="name">{{ p.full_name }}</span>
+        <span class="sub"><span class="pill {{ p.party|party_class }}">{{ p.party or '?' }}</span>
+          {{ p.office or p.chamber }}</span>
+      </span>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if results.tickers %}
+  <h2 class="section-h">Tickers</h2>
+  <div class="chips">
+    {% for t in results.tickers %}
+    <a class="chip" href="/ticker/{{ t.ticker }}">{{ t.ticker }} <span>{{ t.trades }}</span></a>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if not results.people and not results.tickers %}
+    <div class="empty">No matches for “{{ q }}”.</div>
+  {% endif %}
+{% endif %}
+{% endblock %}

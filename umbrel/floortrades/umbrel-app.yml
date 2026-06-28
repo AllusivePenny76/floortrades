@@ -1,0 +1,55 @@
+manifestVersion: 1
+id: floortrades
+category: finance
+name: FloorTrades
+version: "1.0.0"
+tagline: Track how federal politicians trade stocks — ranked by performance
+description: >-
+  FloorTrades is a self-hosted tracker for U.S. congressional stock trading.
+
+
+  Members of Congress must disclose their stock trades under the STOCK Act.
+  FloorTrades collects those public Periodic Transaction Reports and turns them
+  into something you can actually read:
+
+
+  • Leaderboard — every politician auto-ranked by the estimated excess return of
+    their disclosed stock purchases versus the market.
+
+  • Trade flow — the biggest and most recent transactions on Capitol Hill, with
+    late filings (past the 45-day STOCK Act deadline) flagged.
+
+  • Politician pages — photo, party, state, performance, and trade history.
+
+  • Ticker pages — see which members of Congress are trading any given stock.
+
+  • Full-text search across politicians and tickers.
+
+
+  Everything runs locally on your Umbrel. No accounts, no tracking, no paywall —
+  just public disclosure data on your own hardware. Data refreshes automatically
+  every day and can be refreshed on demand.
+
+
+  Disclosures are self-reported in broad dollar ranges, so all figures are
+  estimates. FloorTrades is for transparency and education — not investment advice.
+releaseNotes: >-
+  First release. Leaderboard, trade flow, politician & ticker pages, search,
+  daily auto-refresh, and a JSON API. Trade history accumulates locally over
+  time, with 2012-2020 Senate history backfilled on first run. Data sourced from
+  public House Clerk, Senate eFD, and OGE disclosures via open datasets.
+developer: FloorTrades
+website: https://github.com/YOUR_GITHUB_USERNAME/floortrades
+dependencies: []
+repo: https://github.com/YOUR_GITHUB_USERNAME/floortrades
+support: https://github.com/YOUR_GITHUB_USERNAME/floortrades/issues
+port: 7891
+gallery:
+  - 1.jpg
+  - 2.jpg
+  - 3.jpg
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+submitter: YOUR_NAME
+submission: https://github.com/YOUR_GITHUB_USERNAME/floortrades

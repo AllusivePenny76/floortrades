@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Who's beating the market?</h1>
+  <p>Federal politicians ranked by the estimated excess return of their disclosed
+     stock purchases versus the market over the same period.</p>
+</section>
+
+<form class="filters" method="get" action="/">
+  <div class="seg">
+    <label>Chamber</label>
+    <select name="chamber" onchange="this.form.submit()">
+      <option value="" {{ 'selected' if not chamber }}>All</option>
+      <option value="house" {{ 'selected' if chamber=='house' }}>House</option>
+      <option value="senate" {{ 'selected' if chamber=='senate' }}>Senate</option>
+    </select>
+  </div>
+  <div class="seg">
+    <label>Party</label>
+    <select name="party" onchange="this.form.submit()">
+      <option value="" {{ 'selected' if not party }}>All</option>
+      <option value="D" {{ 'selected' if party=='D' }}>Democrat</option>
+      <option value="R" {{ 'selected' if party=='R' }}>Republican</option>
+      <option value="I" {{ 'selected' if party=='I' }}>Independent</option>
+    </select>
+  </div>
+  <div class="seg">
+    <label>Rank by</label>
+    <select name="order" onchange="this.form.submit()">
+      <option value="weighted_excess" {{ 'selected' if order=='weighted_excess' }}>Weighted excess return</option>
+      <option value="avg_excess" {{ 'selected' if order=='avg_excess' }}>Avg excess return</option>
+      <option value="avg_ret" {{ 'selected' if order=='avg_ret' }}>Avg raw return</option>
+      <option value="scored_buys" {{ 'selected' if order=='scored_buys' }}>Number of scored buys</option>
+    </select>
+  </div>
+</form>
+
+{% if not rows %}
+  <div class="empty">No data yet. The first refresh may still be running — give it a minute and reload.</div>
+{% else %}
+<ol class="board">
+  {% for r in rows %}
+  <li class="board-row">
+    <span class="rank">{{ loop.index }}</span>
+    <a class="who" href="/politician/{{ r.id }}">
+      {% if r.photo_url %}<img class="avatar" src="{{ r.photo_url }}" alt="" loading="lazy">
+      {% else %}<span class="avatar ph">{{ r.full_name[:1] }}</span>{% endif %}
+      <span class="who-text">
+        <span class="name">{{ r.full_name }}</span>
+        <span class="sub">
+          <span class="pill {{ r.party|party_class }}">{{ r.party or '?' }}</span>
+          {{ r.chamber|capitalize }} · {{ r.state or '' }}
+        </span>
+      </span>
+    </a>
+    <span class="metric">
+      <span class="big {{ 'pos' if (r.weighted_excess or 0) >= 0 else 'neg' }}">
+        {{ r.weighted_excess|pct }}
+      </span>
+      <span class="metric-label">weighted excess</span>
+    </span>
+    <span class="metric sm">
+      <span>{{ r.scored_buys or 0 }}</span><span class="metric-label">scored buys</span>
+    </span>
+    <span class="metric sm">
+      <span>{{ r.avg_ret|pct }}</span><span class="metric-label">avg return</span>
+    </span>
+  </li>
+  {% endfor %}
+</ol>
+{% endif %}
+{% endblock %}

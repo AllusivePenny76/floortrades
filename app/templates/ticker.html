@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ symbol }}{% endblock %}
+{% block content %}
+<section class="profile">
+  <span class="profile-photo ticker-badge">{{ symbol }}</span>
+  <div class="profile-info">
+    <h1>{{ symbol }}</h1>
+    <p class="sub">Congressional trading activity</p>
+    <div class="profile-stats">
+      <div class="ps"><span class="ps-n">{{ agg.total or 0 }}</span><span class="ps-l">disclosed trades</span></div>
+      <div class="ps"><span class="ps-n pos">{{ agg.buys or 0 }}</span><span class="ps-l">buys</span></div>
+      <div class="ps"><span class="ps-n neg">{{ agg.sells or 0 }}</span><span class="ps-l">sells</span></div>
+      <div class="ps"><span class="ps-n">{{ agg.politicians or 0 }}</span><span class="ps-l">politicians</span></div>
+    </div>
+  </div>
+</section>
+
+{% if not trades %}
+  <div class="empty">No disclosed trades found for {{ symbol }}.</div>
+{% else %}
+<table class="trades">
+  <thead><tr><th>Politician</th><th>Type</th><th class="num">Amount</th><th>Traded</th><th>Filed</th></tr></thead>
+  <tbody>
+    {% for t in trades %}
+    <tr>
+      <td><a href="/politician/{{ t.filer_id }}">{{ t.filer_name }}</a>
+          <span class="pill {{ t.party|party_class }}">{{ t.party or '?' }}</span></td>
+      <td><span class="txn {{ 'buy' if 'Purchase' in (t.transaction_type or '') else ('sell' if 'Sale' in (t.transaction_type or '') else '') }}">{{ t.transaction_type }}</span></td>
+      <td class="num">{{ t.amount_range_label or '—' }}</td>
+      <td>{{ t.transaction_date }}</td>
+      <td>{{ t.filing_date }}{% if t.is_late %} <span class="flag late">LATE</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

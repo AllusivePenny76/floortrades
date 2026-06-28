@@ -1,0 +1,17 @@
+# Local development / self-host compose (NOT the Umbrel manifest).
+# For Umbrel packaging see umbrel/floortrades/docker-compose.yml
+services:
+  floortrades:
+    build: .
+    image: floortrades:dev
+    container_name: floortrades
+    ports:
+      - "8000:8000"
+    volumes:
+      - floortrades_data:/data
+    environment:
+      - FLOORTRADES_REFRESH_HOURS=24
+    restart: unless-stopped
+
+volumes:
+  floortrades_data:

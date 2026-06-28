@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Trades{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Trade flow</h1>
+  <p>The largest and most recent disclosed transactions on Capitol Hill.</p>
+</section>
+
+<div class="split">
+  <div class="split-main">
+    <form class="filters" method="get" action="/trades">
+      <div class="tabs">
+        <a href="/trades?view=top" class="tab {{ 'on' if view=='top' }}">Biggest</a>
+        <a href="/trades?view=recent" class="tab {{ 'on' if view=='recent' }}">Most recent</a>
+      </div>
+      <input type="hidden" name="view" value="{{ view }}">
+      <div class="seg">
+        <select name="chamber" onchange="this.form.submit()">
+          <option value="" {{ 'selected' if not chamber }}>All chambers</option>
+          <option value="house" {{ 'selected' if chamber=='house' }}>House</option>
+          <option value="senate" {{ 'selected' if chamber=='senate' }}>Senate</option>
+        </select>
+      </div>
+      {% if view=='top' %}
+      <div class="seg">
+        <select name="txn" onchange="this.form.submit()">
+          <option value="" {{ 'selected' if not txn }}>Buys & sells</option>
+          <option value="buy" {{ 'selected' if txn=='buy' }}>Buys only</option>
+          <option value="sell" {{ 'selected' if txn=='sell' }}>Sells only</option>
+        </select>
+      </div>
+      <label class="check">
+        <input type="checkbox" name="late" value="1" {{ 'checked' if late }}
+               onchange="this.form.submit()"> Late filings only
+      </label>
+      {% endif %}
+    </form>
+
+    {% if not rows %}
+      <div class="empty">No trades match. Try clearing filters.</div>
+    {% else %}
+    <table class="trades">
+      <thead>
+        <tr><th>Politician</th><th>Ticker</th><th>Type</th><th class="num">Amount</th>
+            <th>Traded</th><th>Filed</th></tr>
+      </thead>
+      <tbody>
+        {% for t in rows %}
+        <tr>
+          <td>
+            <a href="/politician/{{ t.filer_id }}">{{ t.filer_name }}</a>
+            <span class="pill {{ t.party|party_class }}">{{ t.party or '?' }}</span>
+          </td>
+          <td><a class="ticker" href="/ticker/{{ t.ticker }}">{{ t.ticker }}</a>
+              <span class="asset">{{ t.asset_name }}</span></td>
+          <td>
+            <span class="txn {{ 'buy' if 'Purchase' in (t.transaction_type or '') else ('sell' if 'Sale' in (t.transaction_type or '') else '') }}">
+              {{ t.transaction_type }}
+            </span>
+          </td>
+          <td class="num">{{ t.amount_range_label or '—' }}</td>
+          <td>{{ t.transaction_date }}</td>
+          <td>
+            {{ t.filing_date }}
+            {% if t.is_late %}<span class="flag late" title="Filed beyond the 45-day STOCK Act deadline">LATE</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+
+  <aside class="split-side">
+    <h3>Most-traded tickers (90d)</h3>
+    <ul class="ticker-list">
+      {% for tk in top_tickers %}
+      <li>
+        <a href="/ticker/{{ tk.ticker }}" class="ticker">{{ tk.ticker }}</a>
+        <span class="bars">
+          <span class="b buy" style="flex:{{ tk.buys or 0 }}"></span>
+          <span class="b sell" style="flex:{{ tk.sells or 0 }}"></span>
+        </span>
+        <span class="count">{{ tk.trades }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </aside>
+</div>
+{% endblock %}

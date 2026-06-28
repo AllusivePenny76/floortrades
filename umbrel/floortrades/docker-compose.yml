@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+  # Umbrel's reverse proxy. It handles auth + routing and forwards traffic
+  # to our app container. Do not remove.
+  app_proxy:
+    environment:
+      APP_HOST: floortrades_server_1
+      APP_PORT: 8000
+
+  server:
+    # Multi-arch image (linux/amd64 + linux/arm64). Build & push with
+    # scripts/build-and-push.sh, then pin the digest here for reproducibility.
+    image: ghcr.io/YOUR_GITHUB_USERNAME/floortrades:1.0.0
+    restart: on-failure
+    stop_grace_period: 1m
+    volumes:
+      - ${APP_DATA_DIR}/data:/data
+    environment:
+      - FLOORTRADES_DATA_DIR=/data
+      - FLOORTRADES_REFRESH_HOURS=24

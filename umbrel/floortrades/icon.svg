@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5b8cff"/>
+      <stop offset="1" stop-color="#9c6bff"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#0c0f17"/>
+  <rect width="512" height="512" rx="112" fill="url(#g)" opacity="0.12"/>
+  <!-- capitol dome -->
+  <g fill="url(#g)">
+    <circle cx="256" cy="120" r="16"/>
+    <path d="M256 140c-34 0-58 26-58 60h116c0-34-24-60-58-60z"/>
+    <rect x="180" y="206" width="152" height="14" rx="6"/>
+  </g>
+  <!-- ascending trade bars -->
+  <g fill="url(#g)">
+    <rect x="150" y="320" width="44" height="62" rx="8"/>
+    <rect x="212" y="286" width="44" height="96" rx="8"/>
+    <rect x="274" y="250" width="44" height="132" rx="8"/>
+    <rect x="336" y="300" width="44" height="82" rx="8"/>
+  </g>
+  <!-- trend arrow -->
+  <path d="M150 312 L234 268 L296 232 L372 196" fill="none" stroke="#3ddc97" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M338 188 L382 184 L378 228" fill="none" stroke="#3ddc97" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ filer.full_name if filer else 'Politician' }}{% endblock %}
+{% block content %}
+<section class="profile">
+  {% if filer and filer.photo_url %}
+    <img class="profile-photo" src="{{ filer.photo_url }}" alt="">
+  {% else %}
+    <span class="profile-photo ph">{{ (filer.full_name if filer else trades[0].filer_name)[:1] }}</span>
+  {% endif %}
+  <div class="profile-info">
+    <h1>{{ filer.full_name if filer else trades[0].filer_name }}</h1>
+    <p class="sub">
+      <span class="pill {{ (filer.party if filer else trades[0].party)|party_class }}">
+        {{ (filer.party if filer else trades[0].party) or '?' }}</span>
+      {{ filer.office if filer and filer.office else (filer.chamber|capitalize if filer else '') }}
+    </p>
+    <div class="profile-stats">
+      {% if rank %}<div class="ps"><span class="ps-n">#{{ rank }}</span><span class="ps-l">leaderboard rank</span></div>{% endif %}
+      {% if returns %}
+      <div class="ps"><span class="ps-n {{ 'pos' if (returns.weighted_excess or 0)>=0 else 'neg' }}">{{ returns.weighted_excess|pct }}</span><span class="ps-l">weighted excess</span></div>
+      <div class="ps"><span class="ps-n">{{ returns.avg_ret|pct }}</span><span class="ps-l">avg return</span></div>
+      {% endif %}
+      {% if filer %}
+      <div class="ps"><span class="ps-n">{{ filer.trade_count or 0 }}</span><span class="ps-l">total trades</span></div>
+      <div class="ps"><span class="ps-n">{{ filer.est_volume|money }}</span><span class="ps-l">est. volume</span></div>
+      {% if filer.late_filings %}<div class="ps"><span class="ps-n neg">{{ filer.late_filings }}</span><span class="ps-l">late filings</span></div>{% endif %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<h2 class="section-h">Recent trades</h2>
+{% if not trades %}
+  <div class="empty">
+    No transactions in the recent disclosure window (latest ~5,000 filings).
+    {% if returns %}The performance &amp; rank above are computed over this member's full disclosure history.{% endif %}
+  </div>
+{% else %}
+<table class="trades">
+  <thead><tr><th>Ticker</th><th>Type</th><th class="num">Amount</th><th>Traded</th><th>Filed</th><th>Owner</th></tr></thead>
+  <tbody>
+    {% for t in trades %}
+    <tr>
+      <td>{% if t.ticker %}<a class="ticker" href="/ticker/{{ t.ticker }}">{{ t.ticker }}</a>{% endif %}
+          <span class="asset">{{ t.asset_name }}</span></td>
+      <td><span class="txn {{ 'buy' if 'Purchase' in (t.transaction_type or '') else ('sell' if 'Sale' in (t.transaction_type or '') else '') }}">{{ t.transaction_type }}</span></td>
+      <td class="num">{{ t.amount_range_label or '—' }}</td>
+      <td>{{ t.transaction_date }}</td>
+      <td>{{ t.filing_date }}{% if t.is_late %} <span class="flag late">LATE</span>{% endif %}</td>
+      <td>{{ t.owner or '—' }}{% if t.doc_url %} · <a href="{{ t.doc_url }}" target="_blank" rel="noopener">doc</a>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

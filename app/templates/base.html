@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ app_name }}{% endblock %} · {{ app_name }}</title>
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark">▰</span> {{ app_name }}
+    </a>
+    <nav>
+      <a href="/" class="{{ 'on' if active=='leaderboard' }}">Leaderboard</a>
+      <a href="/trades" class="{{ 'on' if active=='trades' }}">Trades</a>
+    </nav>
+    <form class="search" action="/search" method="get">
+      <input type="search" name="q" placeholder="Search politician or ticker…"
+             value="{{ q or '' }}" autocomplete="off">
+    </form>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <div class="stats-line">
+      {% if stats %}
+      <span><strong>{{ "{:,}".format(stats.trades or 0) }}</strong> trades</span>
+      <span><strong>{{ "{:,}".format(stats.filers or 0) }}</strong> filers</span>
+      <span><strong>{{ "{:,}".format(stats.late or 0) }}</strong> late filings</span>
+      {% if stats.latest %}<span>latest trade {{ stats.latest }}</span>{% endif %}
+      {% endif %}
+    </div>
+    <div class="meta-line">
+      {% if last_refresh %}<span>Updated {{ last_refresh.replace('T',' ')[:16] }} UTC</span>{% endif %}
+      <form action="/refresh" method="post" style="display:inline">
+        <button class="link-btn" type="submit">↻ Refresh now</button>
+      </form>
+    </div>
+    <div class="attr">
+      {{ attribution }}
+      Disclosures are self-reported under the STOCK Act in amount ranges; figures are estimates.
+      Not investment advice. {{ app_name }} v{{ version }} · self-hosted &amp; open source.
+    </div>
+  </footer>
+</body>
+</html>
