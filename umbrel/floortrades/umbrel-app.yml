@@ -39,10 +39,10 @@ releaseNotes: >-
   time, with 2012-2020 Senate history backfilled on first run. Data sourced from
   public House Clerk, Senate eFD, and OGE disclosures via open datasets.
 developer: FloorTrades
-website: https://github.com/YOUR_GITHUB_USERNAME/floortrades
+website: https://github.com/allusivepenny76/floortrades
 dependencies: []
-repo: https://github.com/YOUR_GITHUB_USERNAME/floortrades
-support: https://github.com/YOUR_GITHUB_USERNAME/floortrades/issues
+repo: https://github.com/allusivepenny76/floortrades
+support: https://github.com/allusivepenny76/floortrades/issues
 port: 7891
 gallery:
   - 1.jpg
@@ -51,5 +51,5 @@ gallery:
 path: ""
 defaultUsername: ""
 defaultPassword: ""
-submitter: YOUR_NAME
-submission: https://github.com/YOUR_GITHUB_USERNAME/floortrades
+submitter: allusivepenny76
+submission: https://github.com/allusivepenny76/floortrades

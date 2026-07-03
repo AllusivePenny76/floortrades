@@ -32,9 +32,9 @@ docker compose up --build
 
 1. Build & push a multi-arch image to a registry you control:
    ```bash
-   GH_USER=YOUR_GITHUB_USERNAME VERSION=1.0.0 ./scripts/build-and-push.sh
+   GH_USER=allusivepenny76 VERSION=1.0.0 ./scripts/build-and-push.sh
    ```
-2. Replace `YOUR_GITHUB_USERNAME` / `YOUR_NAME` placeholders in
+2. Replace `allusivepenny76` / `allusivepenny76` placeholders in
    `umbrel/floortrades/umbrel-app.yml` and `umbrel/floortrades/docker-compose.yml`.
 3. Add 3 screenshots as `umbrel/floortrades/gallery/{1,2,3}.jpg`
    (see `umbrel/floortrades/gallery/README.md`).
