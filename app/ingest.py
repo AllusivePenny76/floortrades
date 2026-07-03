@@ -51,12 +51,13 @@ def _upsert_trades(conn, rows):
 
 
 def _name_to_filer(filers):
-    """normalized full_name -> {id, party, state} for backfill name matching."""
+    """normalized full_name -> {id, chamber, party, state} for backfill name matching."""
     out = {}
     for f in filers:
         key = backfill._norm_name(f.get("full_name"))
         if key:
-            out[key] = {"id": f["id"], "party": f.get("party"), "state": f.get("state")}
+            out[key] = {"id": f["id"], "chamber": f.get("chamber"),
+                        "party": f.get("party"), "state": f.get("state")}
     return out
 
 

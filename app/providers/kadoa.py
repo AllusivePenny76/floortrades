@@ -10,6 +10,7 @@ from typing import List, Dict
 import httpx
 
 from .base import Provider
+from ..textutil import clean_text
 
 BASE = "https://raw.githubusercontent.com/kadoa-org/congress-trading-monitor/main/public/data"
 
@@ -122,7 +123,5 @@ class KadoaProvider(Provider):
 
 
 def _clean(s):
-    """Asset names in the feed sometimes carry runs of whitespace/newlines."""
-    if not s:
-        return s
-    return " ".join(s.split())
+    """Asset names in the feed carry whitespace runs and HTML entities."""
+    return clean_text(s)

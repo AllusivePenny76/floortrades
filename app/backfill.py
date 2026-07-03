@@ -13,9 +13,11 @@ its full history exists only as individual PDF filings.)
 import re
 import hashlib
 import logging
-from typing import List, Dict, Callable
+from typing import List, Dict, Callable, Optional
 
 import httpx
+
+from .textutil import clean_text
 
 log = logging.getLogger("floortrades.backfill")
 
@@ -62,12 +64,69 @@ def _norm_name(n):
     return n
 
 
+_SUFFIX_RE = re.compile(r"\s+(jr|sr|ii|iii|iv)$")
+
+
+def _strip_suffix(norm):
+    """Drop a generational suffix from an already-normalized name."""
+    return _SUFFIX_RE.sub("", norm)
+
+
 def _slug(n):
     return re.sub(r"[^a-z0-9]+", "_", _norm_name(n)).strip("_")
 
 
-def _clean(s):
-    return " ".join(s.split()) if s else s
+def build_name_matcher(name_to_filer: Dict[str, Dict], archive_names) -> Callable[[str], Optional[Dict]]:
+    """Return a match(name) -> filer-or-None function for merging feeds.
+
+    Exact normalized match first. Then two conservative fallbacks for the
+    name-format drift between the Senate archive and the primary feed
+    ('Angus S King, Jr.' vs 'Angus S King'; 'A. Mitchell McConnell, Jr.' vs
+    'Mitch McConnell'):
+      1. suffix-stripped match (both sides), only when unambiguous;
+      2. last-name match against SENATE filers, only when that last name is
+         unique among senate filers AND among all archive names — so
+         e.g. two archive-era Udalls can never merge onto one page.
+    """
+    # Suffix-stripped index of primary-feed names (collisions -> ambiguous).
+    stripped: Dict[str, List[Dict]] = {}
+    for key, filer in name_to_filer.items():
+        s = _strip_suffix(key)
+        stripped.setdefault(s, []).append(filer)
+
+    # Last-name index of senate filers.
+    by_last: Dict[str, List[Dict]] = {}
+    for key, filer in name_to_filer.items():
+        if (filer.get("chamber") or "").lower() != "senate":
+            continue
+        parts = _strip_suffix(key).split()
+        if parts:
+            by_last.setdefault(parts[-1], []).append(filer)
+
+    # Distinct archive names sharing each last name.
+    arch_last: Dict[str, set] = {}
+    for n in archive_names:
+        parts = _strip_suffix(_norm_name(n)).split()
+        if parts:
+            arch_last.setdefault(parts[-1], set()).add(" ".join(parts))
+
+    def match(name: str) -> Optional[Dict]:
+        norm = _norm_name(name)
+        hit = name_to_filer.get(norm)
+        if hit:
+            return hit
+        s = _strip_suffix(norm)
+        cands = stripped.get(s)
+        if cands and len(cands) == 1:
+            return cands[0]
+        parts = s.split()
+        last = parts[-1] if parts else ""
+        cands = by_last.get(last)
+        if cands and len(cands) == 1 and len(arch_last.get(last, ())) == 1:
+            return cands[0]
+        return None
+
+    return match
 
 
 def _get_json(url):
@@ -84,6 +143,8 @@ def senate_archive_trades(name_to_filer: Dict[str, Dict]) -> List[Dict]:
     primary feed, so historical trades attach to the same politician page.
     """
     rows = _get_json(SENATE_ARCHIVE_URL)
+    match_name = build_name_matcher(
+        name_to_filer, {r["senator"] for r in rows if r.get("senator")})
     out = []
     for r in rows:
         senator = r.get("senator")
@@ -95,13 +156,19 @@ def senate_archive_trades(name_to_filer: Dict[str, Dict]) -> List[Dict]:
         if ticker in ("", "--", "N/A"):
             ticker = None
 
-        match = name_to_filer.get(_norm_name(senator))
+        match = match_name(senator)
         filer_id = match["id"] if match else f"ssw_senate_{_slug(senator)}"
         party = match.get("party") if match else None
         state = match.get("state") if match else None
 
         # Stable synthetic id so re-runs upsert instead of duplicating.
-        raw = f"ssw|{senator}|{r.get('transaction_date')}|{ticker}|{r.get('type')}|{r.get('amount')}|{r.get('owner')}"
+        # Every distinguishing raw field is part of the identity: hashing a
+        # subset silently collapses distinct trades that share it — e.g.
+        # same-day/same-amount purchases of different muni bonds (no ticker),
+        # or per-dependent trades differing only in comment or filing link.
+        raw = (f"ssw|{senator}|{r.get('transaction_date')}|{ticker}|{r.get('type')}"
+               f"|{r.get('amount')}|{r.get('owner')}|{r.get('asset_description')}"
+               f"|{r.get('asset_type')}|{r.get('comment')}|{r.get('ptr_link')}")
         tid = "ssw_" + hashlib.sha1(raw.encode()).hexdigest()[:20]
 
         out.append({
@@ -110,7 +177,7 @@ def senate_archive_trades(name_to_filer: Dict[str, Dict]) -> List[Dict]:
             "filing_date": None,
             "owner": r.get("owner"),
             "ticker": ticker,
-            "asset_name": _clean(r.get("asset_description")),
+            "asset_name": clean_text(r.get("asset_description")),
             "asset_type": r.get("asset_type"),
             "transaction_type": r.get("type"),
             "amount_range_low": low,
