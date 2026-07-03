@@ -1,5 +1,5 @@
 # Umbrel Community App Store manifest.
 # Add this store to Umbrel via: Settings → App Store → Community App Stores →
 # paste this repo's URL. `id` must be globally unique & lowercase.
-id: floortrades-store
+id: floortrades
 name: FloorTrades
