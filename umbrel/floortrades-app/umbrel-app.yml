@@ -2,7 +2,8 @@ manifestVersion: 1
 id: floortrades-app
 category: finance
 name: FloorTrades
-version: "1.1.2"
+version: "1.1.3"
+icon: https://raw.githubusercontent.com/allusivepenny76/floortrades-store/main/floortrades-app/icon.svg
 tagline: Track how federal politicians trade stocks — ranked by performance
 description: >-
   FloorTrades is a self-hosted tracker for U.S. congressional stock trading.
@@ -44,10 +45,7 @@ dependencies: []
 repo: https://github.com/allusivepenny76/floortrades
 support: https://github.com/allusivepenny76/floortrades/issues
 port: 7891
-gallery:
-  - 1.jpg
-  - 2.jpg
-  - 3.jpg
+gallery: []
 path: ""
 defaultUsername: ""
 defaultPassword: ""
