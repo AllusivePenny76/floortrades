@@ -31,4 +31,4 @@ PROVIDER_API_KEY = os.environ.get("FLOORTRADES_PROVIDER_API_KEY", "")
 BACKFILL_ENABLED = os.environ.get("FLOORTRADES_BACKFILL", "true").lower() == "true"
 
 APP_NAME = "FloorTrades"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.1.0"

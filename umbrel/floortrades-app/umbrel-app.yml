@@ -2,7 +2,7 @@ manifestVersion: 1
 id: floortrades-app
 category: finance
 name: FloorTrades
-version: "1.0.0"
+version: "1.1.0"
 tagline: Track how federal politicians trade stocks — ranked by performance
 description: >-
   FloorTrades is a self-hosted tracker for U.S. congressional stock trading.
