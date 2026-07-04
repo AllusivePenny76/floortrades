@@ -1,0 +1,56 @@
+name: Build & publish static site
+
+# Rebuilds the public GitHub Pages site straight from the upstream data feeds
+# (no self-hosted instance involved), so the shared site stays current.
+on:
+  schedule:
+    - cron: "17 */6 * * *" # every 6 hours; upstream data updates ~daily
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-build
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch data from feeds
+        env:
+          FLOORTRADES_DATA_DIR: ${{ runner.temp }}/data
+        run: |
+          mkdir -p "$FLOORTRADES_DATA_DIR"
+          python -c "from app import db, ingest; db.init_db(); ingest.refresh()"
+
+      - name: Export static site
+        env:
+          FLOORTRADES_DATA_DIR: ${{ runner.temp }}/data
+          BASE_PATH: /floortrades
+          SITE_URL: https://allusivepenny76.github.io/floortrades
+        run: python scripts/export_static.py site
+
+      - name: Deploy to gh-pages
+        run: |
+          cd site
+          git init -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Site build $(date -u '+%Y-%m-%d %H:%M') UTC"
+          git push --force \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
+            gh-pages

@@ -54,10 +54,11 @@ def transform(html: str, path: str) -> str:
         return tabs.group(1) if tabs else ""
     html = RE_FILTER_FORM.sub(_filters, html)
 
-    # tab links -> exported static variants, then generic BASE prefixing
-    html = html.replace('href="/trades?view=top"', f'href="{BASE}/trades/top/"')
-    html = html.replace('href="/trades?view=recent"', f'href="{BASE}/trades/recent/"')
+    # generic BASE prefixing first, THEN map tab links onto their exported
+    # static variants (doing it before would get double-prefixed).
     html = re.sub(r'(href|src|action)="/', rf'\1="{BASE}/', html)
+    html = html.replace(f'href="{BASE}/trades?view=top"', f'href="{BASE}/trades/top/"')
+    html = html.replace(f'href="{BASE}/trades?view=recent"', f'href="{BASE}/trades/recent/"')
 
     og = (
         f'<meta property="og:site_name" content="FloorTrades">\n'
