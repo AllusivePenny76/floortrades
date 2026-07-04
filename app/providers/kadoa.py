@@ -85,35 +85,33 @@ class KadoaProvider(Provider):
 
     def fetch_trades(self) -> List[Dict]:
         rows = _get_json("trades.json")
-        out = []
-        for r in rows:
-            if not r.get("id"):
-                continue
-            out.append(
-                {
-                    "id": r.get("id"),
-                    "transaction_date": r.get("transaction_date"),
-                    "filing_date": r.get("filing_date"),
-                    "owner": r.get("owner"),
-                    "ticker": (r.get("ticker") or "").strip().upper() or None,
-                    "asset_name": _clean(r.get("asset_name")),
-                    "asset_type": r.get("asset_type"),
-                    "transaction_type": r.get("transaction_type"),
-                    "amount_range_low": _f(r.get("amount_range_low")),
-                    "amount_range_high": _f(r.get("amount_range_high")),
-                    "amount_range_label": r.get("amount_range_label"),
-                    "days_to_file": _i(r.get("days_to_file")),
-                    "is_late": _i(r.get("is_late")) or 0,
-                    "comment": r.get("comment"),
-                    "filer_id": r.get("filer_id"),
-                    "filer_name": r.get("filer_name"),
-                    "chamber": r.get("chamber"),
-                    "party": r.get("party"),
-                    "state": r.get("state"),
-                    "doc_url": r.get("doc_url"),
-                }
-            )
-        return out
+        return [_norm_trade(r) for r in rows if r.get("id")]
+
+    def iter_filer_histories(self, filer_ids):
+        """Yield (filer_id, trades) from the per-filer detail files.
+
+        The main trades.json is capped at the most recent ~5k transactions;
+        filer/<id>.json carries each politician's FULL history (same trade
+        ids, so upserts dedup against the main feed). Yields (id, []) when a
+        filer has no detail file, and (id, None) on a fetch/parse error so
+        the caller can log and continue.
+        """
+        with httpx.Client(timeout=TIMEOUT, follow_redirects=True) as client:
+            for fid in filer_ids:
+                try:
+                    resp = client.get(f"{BASE}/filer/{fid}.json")
+                    if resp.status_code == 404:
+                        yield fid, []
+                        continue
+                    resp.raise_for_status()
+                    d = resp.json()
+                except (httpx.HTTPError, ValueError):
+                    yield fid, None
+                    continue
+                filer = d.get("filer") or {}
+                yield fid, [
+                    _norm_trade(r, filer) for r in d.get("trades", []) if r.get("id")
+                ]
 
     def attribution(self) -> str:
         return (
@@ -125,3 +123,35 @@ class KadoaProvider(Provider):
 def _clean(s):
     """Asset names in the feed carry whitespace runs and HTML entities."""
     return clean_text(s)
+
+
+def _norm_trade(r: Dict, filer: Dict = None) -> Dict:
+    """Feed trade row -> our trade schema.
+
+    Rows in the per-filer detail files omit the denormalized filer identity
+    (name/chamber/party/state), so those fall back to the accompanying
+    `filer` object.
+    """
+    f = filer or {}
+    return {
+        "id": r.get("id"),
+        "transaction_date": r.get("transaction_date"),
+        "filing_date": r.get("filing_date"),
+        "owner": r.get("owner"),
+        "ticker": (r.get("ticker") or "").strip().upper() or None,
+        "asset_name": _clean(r.get("asset_name")),
+        "asset_type": r.get("asset_type"),
+        "transaction_type": r.get("transaction_type"),
+        "amount_range_low": _f(r.get("amount_range_low")),
+        "amount_range_high": _f(r.get("amount_range_high")),
+        "amount_range_label": r.get("amount_range_label"),
+        "days_to_file": _i(r.get("days_to_file")),
+        "is_late": _i(r.get("is_late")) or 0,
+        "comment": r.get("comment"),
+        "filer_id": r.get("filer_id") or f.get("id"),
+        "filer_name": r.get("filer_name") or f.get("full_name"),
+        "chamber": r.get("chamber") or f.get("chamber"),
+        "party": r.get("party") or f.get("party"),
+        "state": r.get("state") or f.get("state"),
+        "doc_url": r.get("doc_url"),
+    }

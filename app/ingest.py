@@ -61,6 +61,45 @@ def _name_to_filer(filers):
     return out
 
 
+def _deep_history_sync(provider, filers):
+    """Pull full per-filer trade history where we hold less than upstream.
+
+    The primary trades feed is capped at the most recent ~5k transactions, so
+    politicians whose activity predates that window rank on the leaderboard
+    (returns cover full history) but show no trades. Providers that publish
+    per-filer detail expose iter_filer_histories; we fetch only filers whose
+    upstream trade_count exceeds our local row count (archive-backfilled rows
+    excluded — they aren't upstream's), so after the first full sync this is
+    a near no-op each refresh. Returns the number of filers synced.
+    """
+    if not hasattr(provider, "iter_filer_histories"):
+        return 0
+    with db.get_conn() as conn:
+        local = dict(conn.execute(
+            "SELECT filer_id, COUNT(*) FROM trades "
+            "WHERE id NOT LIKE 'ssw_%' GROUP BY filer_id"
+        ).fetchall())
+    stale = [f["id"] for f in filers
+             if f.get("id") and (f.get("trade_count") or 0) > local.get(f["id"], 0)]
+    if not stale:
+        return 0
+    log.info("Deep history: syncing %d filers with missing trades", len(stale))
+    synced = failed = rows = 0
+    for fid, hist in provider.iter_filer_histories(stale):
+        if hist is None:
+            failed += 1
+            continue
+        with db.get_conn() as conn:
+            _upsert_trades(conn, hist)
+        synced += 1
+        rows += len(hist)
+        if synced % 50 == 0:
+            log.info("Deep history: %d/%d filers synced", synced, len(stale))
+    log.info("Deep history: synced %d filers (%d rows upserted, %d failed)",
+             synced, rows, failed)
+    return synced
+
+
 def refresh(force=False):
     """Fetch and load all data. Returns a summary dict."""
     provider = get_provider()
@@ -88,6 +127,8 @@ def refresh(force=False):
                 summary[f"backfill_{name}"] = len(hist)
             except Exception:
                 log.exception("Backfill source '%s' failed (continuing)", name)
+
+        summary["deep_history_filers"] = _deep_history_sync(provider, filers)
 
     now = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     db.set_meta("last_refresh", now)
