@@ -11,7 +11,7 @@ services:
   server:
     # Multi-arch image (linux/amd64 + linux/arm64). Build & push with
     # scripts/build-and-push.sh, then pin the digest here for reproducibility.
-    image: ghcr.io/allusivepenny76/floortrades:1.1.0
+    image: ghcr.io/allusivepenny76/floortrades:1.1.1
     restart: on-failure
     stop_grace_period: 1m
     volumes:

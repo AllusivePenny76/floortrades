@@ -18,6 +18,7 @@ main{flex:1;width:100%;max-width:1040px;margin:0 auto;padding:22px 18px 60px}
   border-bottom:1px solid var(--line)}
 .brand{font-weight:700;font-size:18px;letter-spacing:.3px;white-space:nowrap}
 .brand-mark{color:var(--accent)}
+.brand-logo{width:26px;height:26px;border-radius:7px;vertical-align:-7px;margin-right:4px}
 .topbar nav{display:flex;gap:6px;margin-left:6px}
 .topbar nav a{padding:6px 12px;border-radius:8px;color:var(--mut);font-weight:600;font-size:14px}
 .topbar nav a:hover{color:var(--txt);background:var(--panel)}

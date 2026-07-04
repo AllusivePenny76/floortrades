@@ -4,23 +4,41 @@
       <stop offset="0" stop-color="#5b8cff"/>
       <stop offset="1" stop-color="#9c6bff"/>
     </linearGradient>
+    <linearGradient id="bars" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#5b8cff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#9c6bff" stop-opacity="0.95"/>
+    </linearGradient>
   </defs>
+
   <rect width="512" height="512" rx="112" fill="#0c0f17"/>
-  <rect width="512" height="512" rx="112" fill="url(#g)" opacity="0.12"/>
-  <!-- capitol dome -->
+  <rect width="512" height="512" rx="112" fill="url(#g)" opacity="0.10"/>
+
+  <!-- Capitol: lantern, dome, cornice, colonnade, steps -->
   <g fill="url(#g)">
-    <circle cx="256" cy="120" r="16"/>
-    <path d="M256 140c-34 0-58 26-58 60h116c0-34-24-60-58-60z"/>
-    <rect x="180" y="206" width="152" height="14" rx="6"/>
+    <circle cx="256" cy="118" r="11"/>
+    <rect x="251" y="126" width="10" height="14" rx="3"/>
+    <path d="M186 196 C186 128 326 128 326 196 Z"/>
+    <rect x="174" y="196" width="164" height="16" rx="6"/>
+    <rect x="192" y="212" width="12" height="18"/>
+    <rect x="222" y="212" width="12" height="18"/>
+    <rect x="250" y="212" width="12" height="18"/>
+    <rect x="278" y="212" width="12" height="18"/>
+    <rect x="308" y="212" width="12" height="18"/>
+    <rect x="154" y="230" width="204" height="14" rx="6"/>
+    <rect x="134" y="252" width="244" height="14" rx="6"/>
   </g>
+
   <!-- ascending trade bars -->
-  <g fill="url(#g)">
-    <rect x="150" y="320" width="44" height="62" rx="8"/>
-    <rect x="212" y="286" width="44" height="96" rx="8"/>
-    <rect x="274" y="250" width="44" height="132" rx="8"/>
-    <rect x="336" y="300" width="44" height="82" rx="8"/>
+  <g fill="url(#bars)">
+    <rect x="136" y="358" width="48" height="60" rx="10"/>
+    <rect x="204" y="330" width="48" height="88" rx="10"/>
+    <rect x="272" y="302" width="48" height="116" rx="10"/>
+    <rect x="340" y="274" width="48" height="144" rx="10"/>
   </g>
-  <!-- trend arrow -->
-  <path d="M150 312 L234 268 L296 232 L372 196" fill="none" stroke="#3ddc97" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M338 188 L382 184 L378 228" fill="none" stroke="#3ddc97" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- trend line (filled band, renderer-proof) + arrowhead -->
+  <g fill="#3ddc97">
+    <path d="M145 327 L213 299 L281 271 L335 249 L341 263 L287 285 L219 313 L151 341 Z"/>
+    <path d="M386 236 L354 270 L340 234 Z"/>
+  </g>
 </svg>
